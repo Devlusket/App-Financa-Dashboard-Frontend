@@ -47,6 +47,12 @@ function notifyError(message: string): void {
   }
 }
 
+function notifyRequest(phase: "start" | "end", id: string, path: string): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(`financa:api-request-${phase}`, { detail: { id, path } }));
+  }
+}
+
 async function request<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   if (!API_URL) {
     const message = "A URL da API não está configurada.";
@@ -55,6 +61,8 @@ async function request<T>(path: string, options: ApiRequestOptions = {}): Promis
   }
 
   const { body, authenticated = true, silentError = false, headers, ...requestInit } = options;
+  const requestId = crypto.randomUUID();
+  notifyRequest("start", requestId, path);
   const token = tokenStorage.get();
   const requestHeaders = new Headers(headers);
 
@@ -64,37 +72,41 @@ async function request<T>(path: string, options: ApiRequestOptions = {}): Promis
     requestHeaders.set("Authorization", `Bearer ${token}`);
   }
 
-  let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, {
-      ...requestInit,
-      headers: requestHeaders,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-  } catch {
-    const message = "Não foi possível conectar à API. Verifique sua conexão e a configuração de CORS.";
-    if (!silentError) notifyError(message);
-    throw new ApiError(message, 0);
-  }
-
-  const responseBody = response.status === 204
-    ? undefined
-    : await response.json().catch(() => undefined) as ApiErrorBody | T | undefined;
-
-  if (!response.ok) {
-    const errorBody = responseBody as ApiErrorBody | undefined;
-
-    if (response.status === 401 && authenticated) {
-      tokenStorage.clear();
-      if (typeof window !== "undefined") window.location.assign("/login");
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}${path}`, {
+        ...requestInit,
+        headers: requestHeaders,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    } catch {
+      const message = "Não foi possível conectar à API. Verifique sua conexão e a configuração de CORS.";
+      if (!silentError) notifyError(message);
+      throw new ApiError(message, 0);
     }
 
-    const message = errorBody?.mensagem ?? "Ocorreu um erro ao processar a solicitação.";
-    if (!silentError && response.status !== 401) notifyError(message);
-    throw new ApiError(message, response.status, errorBody);
-  }
+    const responseBody = response.status === 204
+      ? undefined
+      : await response.json().catch(() => undefined) as ApiErrorBody | T | undefined;
 
-  return responseBody as T;
+    if (!response.ok) {
+      const errorBody = responseBody as ApiErrorBody | undefined;
+
+      if (response.status === 401 && authenticated) {
+        tokenStorage.clear();
+        if (typeof window !== "undefined") window.location.assign("/login");
+      }
+
+      const message = errorBody?.mensagem ?? "Ocorreu um erro ao processar a solicitação.";
+      if (!silentError && response.status !== 401) notifyError(message);
+      throw new ApiError(message, response.status, errorBody);
+    }
+
+    return responseBody as T;
+  } finally {
+    notifyRequest("end", requestId, path);
+  }
 }
 
 export const apiClient = {

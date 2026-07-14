@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ApiErrorToaster } from "@/components/feedback/api-error-toaster";
+import { BackendWakeupIndicator } from "@/components/feedback/backend-wakeup-indicator";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaProvider } from "@/components/pwa/pwa-provider";
 import "./globals.css";
@@ -63,6 +64,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <ApiErrorToaster />
+          <BackendWakeupIndicator />
           <Toaster position="top-right" richColors closeButton />
           <PwaProvider />
         </AuthProvider>
