@@ -41,7 +41,7 @@ export function ContaFixaForm({ categorias, onSubmit }: { categorias: Categoria[
           name="categoriaId"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger id="conta-categoria" className="w-full"><SelectValue placeholder="Escolha uma categoria" /></SelectTrigger>
+              <SelectTrigger id="conta-categoria" className="w-full"><SelectValue placeholder="Escolha uma categoria">{(value) => categorias.find((categoria) => categoria.id === value)?.nome ?? "Escolha uma categoria"}</SelectValue></SelectTrigger>
               <SelectContent>{categorias.map((categoria) => <SelectItem key={categoria.id} value={categoria.id}>{categoria.nome}</SelectItem>)}</SelectContent>
             </Select>
           )}

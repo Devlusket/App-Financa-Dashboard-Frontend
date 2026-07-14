@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("dashboard alterna visão e gerencia um lançamento", async ({ page }) => {
+  test.setTimeout(60_000);
   const usuario = process.env.E2E_USUARIO;
   const senha = process.env.E2E_SENHA;
   const suffix = Date.now();
@@ -19,11 +20,13 @@ test("dashboard alterna visão e gerencia um lançamento", async ({ page }) => {
   await page.getByRole("button", { name: /Nova categoria|Criar primeira categoria/ }).click();
   await page.getByLabel("Nome").fill(categoriaNome);
   await page.getByRole("button", { name: "Criar categoria" }).click();
+  await expect(page.getByRole("dialog", { name: "Nova categoria" })).toBeHidden({ timeout: 15_000 });
 
   await page.getByRole("link", { name: "Dashboard", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seu dinheiro, com clareza." })).toBeVisible();
   await page.getByRole("button", { name: "Individual" }).click();
-  await expect(page.getByLabel("Pessoa")).toBeVisible();
+  await expect(page.getByLabel("Pessoa")).toHaveText(/Hyany|Lucas/);
+  await expect(page.getByLabel("Pessoa")).not.toHaveText(/[0-9a-f]{8}-[0-9a-f-]{27,}/i);
   await page.getByRole("button", { name: "Casa" }).click();
 
   await page.getByRole("button", { name: "Novo lançamento" }).click();
@@ -64,10 +67,11 @@ test("dashboard não causa overflow na viewport mobile", async ({ page }) => {
   await page.getByLabel("Usuário").fill(usuario!);
   await page.getByLabel("Senha").fill(senha!);
   await page.getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seu dinheiro, com clareza." })).toBeVisible();
   await expect(page.getByText("Faturas por pessoa")).toBeVisible();
 
   const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth }));
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
+  await page.waitForTimeout(1_000);
   await page.screenshot({ path: "/tmp/financa-dashboard-mobile.png", fullPage: true });
 });

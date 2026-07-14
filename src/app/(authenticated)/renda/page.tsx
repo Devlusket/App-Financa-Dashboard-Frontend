@@ -99,7 +99,7 @@ export default function RendaPage() {
             <label htmlFor="pessoa-renda" className="text-xs text-muted-foreground">Pessoa</label>
             {isLoadingPessoas ? <Skeleton className="h-8 w-full" /> : (
               <Select value={pessoaId} onValueChange={(value) => { if (value) setPessoaId(value); }} disabled={pessoas.length === 0}>
-                <SelectTrigger id="pessoa-renda" className="w-full"><UserRound /><SelectValue placeholder="Selecione uma pessoa" /></SelectTrigger>
+                <SelectTrigger id="pessoa-renda" className="w-full"><UserRound /><SelectValue placeholder="Selecione uma pessoa">{(value) => pessoas.find((pessoa) => pessoa.id === value)?.nome ?? "Selecione uma pessoa"}</SelectValue></SelectTrigger>
                 <SelectContent>{pessoas.map((item) => <SelectItem key={item.id} value={item.id}>{item.nome}</SelectItem>)}</SelectContent>
               </Select>
             )}

@@ -96,7 +96,7 @@ export function CategoriaForm({ pessoas, categoria, onSubmit }: CategoriaFormPro
           name="tipoDivisao"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="tipo-divisao" className="w-full"><SelectValue /></SelectTrigger>
+                <SelectTrigger id="tipo-divisao" className="w-full"><SelectValue>{(value) => ({ VALOR_FIXO_DIVIDIDO: "Dividir igualmente", FIXO_POR_PESSOA: "100% de uma pessoa", PERCENTUAL: "Percentuais personalizados" })[String(value)] ?? "Regra de divisão"}</SelectValue></SelectTrigger>
               <SelectContent>
                 <SelectItem value="VALOR_FIXO_DIVIDIDO">Dividir igualmente</SelectItem>
                 <SelectItem value="FIXO_POR_PESSOA">100% de uma pessoa</SelectItem>
@@ -116,7 +116,7 @@ export function CategoriaForm({ pessoas, categoria, onSubmit }: CategoriaFormPro
             name="responsavelId"
             render={({ field }) => (
               <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="pessoa-responsavel" className="w-full"><SelectValue placeholder="Selecione uma pessoa" /></SelectTrigger>
+                <SelectTrigger id="pessoa-responsavel" className="w-full"><SelectValue placeholder="Selecione uma pessoa">{(value) => pessoas.find((pessoa) => pessoa.id === value)?.nome ?? "Selecione uma pessoa"}</SelectValue></SelectTrigger>
                 <SelectContent>{pessoas.map((pessoa) => <SelectItem key={pessoa.id} value={pessoa.id}>{pessoa.nome}</SelectItem>)}</SelectContent>
               </Select>
             )}
